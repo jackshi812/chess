@@ -32,4 +32,5 @@ No install step is required. The site is built with plain HTML, CSS, and JavaScr
 - Toggleable sound effects
 - Profile dashboard with links to learning features
 - Interactive opening lab for the Italian Game, London System, and Caro-Kann Defense
+- Opening practice bot that replies with book moves
 - Brainstormed ideas for tactics, endgames, game review, and daily challenges

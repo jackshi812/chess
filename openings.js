@@ -6,6 +6,7 @@ const openings = [
     id: "italian",
     name: "Italian Game",
     side: "White repertoire",
+    practiceColor: "white",
     summary: "A direct opening for developing quickly, fighting for the center, and aiming pieces at Black's king.",
     steps: [
       {
@@ -86,6 +87,7 @@ const openings = [
     id: "london",
     name: "London System",
     side: "White repertoire",
+    practiceColor: "white",
     summary: "A reliable setup where White develops smoothly, supports d4, and builds a sturdy center.",
     steps: [
       {
@@ -178,6 +180,7 @@ const openings = [
     id: "caro-kann",
     name: "Caro-Kann Defense",
     side: "Black repertoire",
+    practiceColor: "black",
     summary: "A solid answer to 1. e4 where Black supports a central d5 break without blocking the light-squared bishop.",
     steps: [
       {
@@ -281,7 +284,7 @@ const openings = [
 ];
 
 const pieceLabels = {
-  white: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
+  white: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" },
   black: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" }
 };
 
@@ -297,11 +300,21 @@ const moveElement = document.querySelector("#opening-move");
 const titleElement = document.querySelector("#opening-step-title");
 const textElement = document.querySelector("#opening-step-text");
 const motivationElement = document.querySelector("#opening-motivation");
+const practiceStatusElement = document.querySelector("#practice-status");
 const previousButton = document.querySelector("#previous-move");
 const nextButton = document.querySelector("#next-move");
+const restartPracticeButton = document.querySelector("#restart-practice");
+const studyModeButton = document.querySelector("#study-mode");
+const practiceModeButton = document.querySelector("#practice-mode");
 
+let mode = "study";
 let currentOpeningIndex = 0;
 let currentStepIndex = 0;
+let practiceBoard = startingPosition();
+let practiceStepIndex = 0;
+let selectedSquare = "";
+let lastPracticeMove = null;
+let practiceFeedback = "";
 
 function startingPosition() {
   const board = {};
@@ -326,6 +339,14 @@ function applyMove(board, move) {
 
   delete board[move.from];
   board[move.to] = piece;
+}
+
+function activeOpening() {
+  return openings[currentOpeningIndex];
+}
+
+function moveColor(stepIndex) {
+  return stepIndex % 2 === 0 ? "white" : "black";
 }
 
 function positionAfter(opening, stepIndex) {
@@ -365,6 +386,7 @@ function drawTabs() {
     button.addEventListener("click", () => {
       currentOpeningIndex = index;
       currentStepIndex = 0;
+      resetPractice();
       renderOpening();
     });
     tabsElement.append(button);
@@ -372,12 +394,28 @@ function drawTabs() {
 }
 
 function drawBoard() {
-  const opening = openings[currentOpeningIndex];
-  const step = opening.steps[currentStepIndex];
-  const board = positionAfter(opening, currentStepIndex);
-  const highlights = new Set([step.from, step.to]);
+  const opening = activeOpening();
+  const step = visibleStep(opening);
+  const board = mode === "practice" ? practiceBoard : positionAfter(opening, currentStepIndex);
+  const highlights = new Set();
+  const lastMoveSquares = new Set();
+
+  if (mode === "study" && step) {
+    highlights.add(step.from);
+    highlights.add(step.to);
+  }
+
+  if (mode === "practice" && selectedSquare) {
+    highlights.add(selectedSquare);
+  }
+
+  if (mode === "practice" && lastPracticeMove) {
+    lastMoveSquares.add(lastPracticeMove.from);
+    lastMoveSquares.add(lastPracticeMove.to);
+  }
 
   boardElement.innerHTML = "";
+  boardElement.classList.toggle("is-practice", mode === "practice");
 
   openingRanks.forEach((rank) => {
     openingFiles.forEach((file) => {
@@ -389,7 +427,22 @@ function drawBoard() {
       square.setAttribute("role", "gridcell");
       square.setAttribute("aria-label", piece ? `${coordinate} ${piece.color} ${piece.type}` : coordinate);
 
+      if (mode === "practice") {
+        square.tabIndex = 0;
+        square.addEventListener("click", () => handlePracticeSquare(coordinate));
+        square.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handlePracticeSquare(coordinate);
+          }
+        });
+      }
+
       if (highlights.has(coordinate)) {
+        square.classList.add(mode === "practice" ? "is-selected" : "is-highlighted");
+      }
+
+      if (lastMoveSquares.has(coordinate)) {
         square.classList.add("is-highlighted");
       }
 
@@ -418,7 +471,7 @@ function drawBoard() {
     });
   });
 
-  drawArrows(step.arrows);
+  drawArrows(step ? step.arrows : []);
 }
 
 function drawArrows(arrows) {
@@ -454,7 +507,8 @@ function drawArrows(arrows) {
 }
 
 function drawMoveList() {
-  const opening = openings[currentOpeningIndex];
+  const opening = activeOpening();
+  const activeIndex = mode === "practice" ? Math.min(practiceStepIndex, opening.steps.length - 1) : currentStepIndex;
   moveListElement.innerHTML = "";
 
   opening.steps.forEach((step, index) => {
@@ -462,8 +516,18 @@ function drawMoveList() {
     button.type = "button";
     button.className = "move-step";
     button.textContent = step.move;
-    button.setAttribute("aria-current", index === currentStepIndex ? "step" : "false");
+    button.disabled = mode === "practice";
+    button.setAttribute("aria-current", index === activeIndex ? "step" : "false");
+
+    if (mode === "practice" && index < practiceStepIndex) {
+      button.classList.add("is-complete");
+    }
+
     button.addEventListener("click", () => {
+      if (mode === "practice") {
+        return;
+      }
+
       currentStepIndex = index;
       renderOpening();
     });
@@ -472,18 +536,143 @@ function drawMoveList() {
 }
 
 function updateLessonText() {
-  const opening = openings[currentOpeningIndex];
-  const step = opening.steps[currentStepIndex];
+  const opening = activeOpening();
+  const step = visibleStep(opening);
   openingNameElement.textContent = opening.name;
   openingSideElement.textContent = opening.side;
   openingSummaryElement.textContent = opening.summary;
-  moveCounterElement.textContent = `Move ${currentStepIndex + 1} of ${opening.steps.length}`;
+  moveCounterElement.textContent = `${mode === "practice" ? "Practice" : "Move"} ${visibleStepIndex(opening) + 1} of ${opening.steps.length}`;
   moveElement.textContent = step.move;
   titleElement.textContent = step.title;
   textElement.textContent = step.explanation;
   motivationElement.textContent = step.motivation;
-  previousButton.disabled = currentStepIndex === 0;
-  nextButton.disabled = currentStepIndex === opening.steps.length - 1;
+  practiceStatusElement.hidden = mode !== "practice";
+  practiceStatusElement.textContent = practiceFeedback;
+  previousButton.hidden = mode === "practice";
+  nextButton.hidden = mode === "practice";
+  restartPracticeButton.hidden = mode !== "practice";
+  previousButton.disabled = mode === "study" && currentStepIndex === 0;
+  nextButton.disabled = mode === "study" && currentStepIndex === opening.steps.length - 1;
+  studyModeButton.setAttribute("aria-pressed", String(mode === "study"));
+  practiceModeButton.setAttribute("aria-pressed", String(mode === "practice"));
+}
+
+function visibleStepIndex(opening) {
+  if (mode === "study") {
+    return currentStepIndex;
+  }
+
+  return Math.min(practiceStepIndex, opening.steps.length - 1);
+}
+
+function visibleStep(opening) {
+  return opening.steps[visibleStepIndex(opening)];
+}
+
+function expectedPracticeStep() {
+  const opening = activeOpening();
+  const step = opening.steps[practiceStepIndex];
+
+  if (!step || moveColor(practiceStepIndex) !== opening.practiceColor) {
+    return null;
+  }
+
+  return step;
+}
+
+function practicePrompt(prefix = "") {
+  const opening = activeOpening();
+  const step = expectedPracticeStep();
+
+  if (!step) {
+    practiceFeedback = `${prefix}Line complete. Restart practice to run it again.`;
+    return;
+  }
+
+  const colorName = opening.practiceColor === "white" ? "White" : "Black";
+  practiceFeedback = `${prefix}${colorName} to move: ${step.move}.`;
+}
+
+function applyPracticeMove(step) {
+  applyMove(practiceBoard, step);
+  lastPracticeMove = { from: step.from, to: step.to };
+}
+
+function playBotReplies(prefix = "") {
+  const opening = activeOpening();
+  const botMoves = [];
+
+  while (practiceStepIndex < opening.steps.length && moveColor(practiceStepIndex) !== opening.practiceColor) {
+    const botStep = opening.steps[practiceStepIndex];
+    applyPracticeMove(botStep);
+    practiceStepIndex += 1;
+    botMoves.push(botStep.move);
+  }
+
+  const botPrefix = botMoves.length ? `${prefix}Bot played ${botMoves.join(", ")}. ` : prefix;
+  practicePrompt(botPrefix);
+}
+
+function resetPractice() {
+  practiceBoard = startingPosition();
+  practiceStepIndex = 0;
+  selectedSquare = "";
+  lastPracticeMove = null;
+  practiceFeedback = "";
+  playBotReplies();
+}
+
+function handlePracticeSquare(coordinate) {
+  const opening = activeOpening();
+  const expected = expectedPracticeStep();
+
+  if (!expected) {
+    practiceFeedback = "Line complete. Restart practice to run it again.";
+    renderOpening();
+    return;
+  }
+
+  const piece = practiceBoard[coordinate];
+
+  if (!selectedSquare) {
+    if (!piece || piece.color !== opening.practiceColor) {
+      practicePrompt("Choose one of your pieces. ");
+      renderOpening();
+      return;
+    }
+
+    selectedSquare = coordinate;
+    practiceFeedback = `Selected ${coordinate}. Choose the destination square.`;
+    renderOpening();
+    return;
+  }
+
+  if (selectedSquare === coordinate) {
+    selectedSquare = "";
+    practicePrompt();
+    renderOpening();
+    return;
+  }
+
+  if (piece && piece.color === opening.practiceColor) {
+    selectedSquare = coordinate;
+    practiceFeedback = `Selected ${coordinate}. Choose the destination square.`;
+    renderOpening();
+    return;
+  }
+
+  if (selectedSquare === expected.from && coordinate === expected.to) {
+    applyPracticeMove(expected);
+    practiceStepIndex += 1;
+    selectedSquare = "";
+    playBotReplies(`Correct: ${expected.move}. `);
+    renderOpening();
+    return;
+  }
+
+  selectedSquare = "";
+  practiceFeedback = `Not this line. Try ${expected.move}: ${expected.title}.`;
+  renderOpening();
 }
 
 function renderOpening() {
@@ -499,9 +688,26 @@ previousButton.addEventListener("click", () => {
 });
 
 nextButton.addEventListener("click", () => {
-  const opening = openings[currentOpeningIndex];
+  const opening = activeOpening();
   currentStepIndex = Math.min(opening.steps.length - 1, currentStepIndex + 1);
   renderOpening();
 });
 
+restartPracticeButton.addEventListener("click", () => {
+  resetPractice();
+  renderOpening();
+});
+
+studyModeButton.addEventListener("click", () => {
+  mode = "study";
+  renderOpening();
+});
+
+practiceModeButton.addEventListener("click", () => {
+  mode = "practice";
+  resetPractice();
+  renderOpening();
+});
+
+resetPractice();
 renderOpening();

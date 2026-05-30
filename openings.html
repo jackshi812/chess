@@ -37,17 +37,24 @@
         <div class="opening-sidebar">
           <div class="opening-tabs" id="opening-tabs" aria-label="Choose an opening"></div>
 
+          <div class="mode-switch" aria-label="Opening mode">
+            <button id="study-mode" class="mode-button" type="button" aria-pressed="true">Study</button>
+            <button id="practice-mode" class="mode-button" type="button" aria-pressed="false">Practice bot</button>
+          </div>
+
           <div class="opening-explainer" aria-live="polite">
             <span class="target-label" id="opening-move-counter">Move 1 of 1</span>
             <strong id="opening-move">1. e4</strong>
             <h2 id="opening-step-title">Control the center</h2>
             <p id="opening-step-text"></p>
             <p id="opening-motivation" class="motivation"></p>
+            <p id="practice-status" class="practice-status" hidden></p>
           </div>
 
           <div class="opening-controls" aria-label="Move controls">
             <button id="previous-move" class="secondary" type="button">Previous</button>
             <button id="next-move" type="button">Next</button>
+            <button id="restart-practice" class="secondary" type="button" hidden>Restart practice</button>
           </div>
         </div>
 
