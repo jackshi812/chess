@@ -18,43 +18,58 @@
       </nav>
     </header>
 
-    <main class="detail-shell">
-      <section class="detail-hero" aria-labelledby="openings-title">
-        <p class="eyebrow">Opening Lab</p>
-        <h1 id="openings-title">Learn openings</h1>
-        <p class="prompt-copy">
-          A place for opening lessons, move-order practice, and simple plans behind the first few moves.
-        </p>
+    <main class="opening-shell">
+      <section class="opening-hero" aria-labelledby="openings-title">
+        <div>
+          <p class="eyebrow">Opening Lab</p>
+          <h1 id="openings-title">Learn openings</h1>
+          <p class="prompt-copy">
+            Step through beginner openings, see the move on the board, and learn the purpose behind each choice.
+          </p>
+        </div>
         <div class="page-actions" aria-label="Page actions">
           <a class="primary-link" href="index.html">Back to profile</a>
           <a class="secondary-link" href="coordinates.html">Train coordinates</a>
         </div>
       </section>
 
-      <section class="roadmap-panel" aria-labelledby="roadmap-title">
-        <div class="section-heading">
-          <p class="eyebrow">Coming Next</p>
-          <h2 id="roadmap-title">Opening features to add</h2>
+      <section class="opening-lab" aria-label="Interactive opening lesson">
+        <div class="opening-sidebar">
+          <div class="opening-tabs" id="opening-tabs" aria-label="Choose an opening"></div>
+
+          <div class="opening-explainer" aria-live="polite">
+            <span class="target-label" id="opening-move-counter">Move 1 of 1</span>
+            <strong id="opening-move">1. e4</strong>
+            <h2 id="opening-step-title">Control the center</h2>
+            <p id="opening-step-text"></p>
+            <p id="opening-motivation" class="motivation"></p>
+          </div>
+
+          <div class="opening-controls" aria-label="Move controls">
+            <button id="previous-move" class="secondary" type="button">Previous</button>
+            <button id="next-move" type="button">Next</button>
+          </div>
         </div>
-        <div class="roadmap-grid">
-          <article>
-            <strong>Opening explorer</strong>
-            <span>Pick White or Black, then learn common first moves and replies.</span>
-          </article>
-          <article>
-            <strong>Plan-first lessons</strong>
-            <span>Learn what each opening is trying to control before memorizing lines.</span>
-          </article>
-          <article>
-            <strong>Move-order quiz</strong>
-            <span>Practice the next move in a line and get feedback when a move is off track.</span>
-          </article>
-          <article>
-            <strong>Mini repertoire</strong>
-            <span>Save a beginner-friendly set of openings to study again later.</span>
-          </article>
+
+        <div class="opening-board-panel">
+          <div class="opening-heading">
+            <div>
+              <p class="eyebrow" id="opening-side">White repertoire</p>
+              <h2 id="opening-name">Italian Game</h2>
+            </div>
+            <p id="opening-summary"></p>
+          </div>
+
+          <div class="opening-board-wrap">
+            <div id="opening-board" class="opening-board" role="grid" aria-label="Opening demonstration board"></div>
+            <svg id="opening-arrows" class="opening-arrows" viewBox="0 0 100 100" aria-hidden="true"></svg>
+          </div>
+
+          <div id="move-list" class="move-list" aria-label="Opening moves"></div>
         </div>
       </section>
     </main>
+
+    <script src="openings.js"></script>
   </body>
 </html>

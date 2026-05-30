@@ -31,5 +31,5 @@ No install step is required. The site is built with plain HTML, CSS, and JavaScr
 - White and black board orientation
 - Toggleable sound effects
 - Profile dashboard with links to learning features
-- Opening lesson roadmap page
+- Interactive opening lab for the Italian Game, London System, and Caro-Kann Defense
 - Brainstormed ideas for tactics, endgames, game review, and daily challenges
