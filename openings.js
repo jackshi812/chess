@@ -281,8 +281,8 @@ const openings = [
 ];
 
 const pieceLabels = {
-  white: { king: "K", queen: "Q", rook: "R", bishop: "B", knight: "N", pawn: "P" },
-  black: { king: "k", queen: "q", rook: "r", bishop: "b", knight: "n", pawn: "p" }
+  white: { king: "♔", queen: "♕", rook: "♖", bishop: "♗", knight: "♘", pawn: "♙" },
+  black: { king: "♚", queen: "♛", rook: "♜", bishop: "♝", knight: "♞", pawn: "♟" }
 };
 
 const boardElement = document.querySelector("#opening-board");

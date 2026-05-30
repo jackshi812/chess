@@ -599,27 +599,26 @@ button:disabled {
 }
 
 .opening-piece {
-  width: 64%;
-  aspect-ratio: 1;
+  width: 78%;
+  height: 78%;
   display: grid;
   place-items: center;
-  border: 2px solid rgba(23, 33, 26, 0.3);
-  border-radius: 50%;
-  font-size: clamp(1.1rem, 4vw, 2.25rem);
-  font-weight: 900;
+  font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif;
+  font-size: clamp(1.65rem, 5.2vw, 3.65rem);
+  font-weight: 400;
   line-height: 1;
-  box-shadow: 0 8px 16px rgba(23, 33, 26, 0.16);
+  text-shadow: 0 3px 8px rgba(23, 33, 26, 0.24);
   z-index: 1;
 }
 
 .opening-piece.white {
-  color: var(--ink);
-  background: #fffaf0;
+  color: #fffaf0;
+  -webkit-text-stroke: 1px rgba(23, 33, 26, 0.85);
 }
 
 .opening-piece.black {
-  color: #fffaf0;
-  background: #28362b;
+  color: #1e2a21;
+  -webkit-text-stroke: 1px rgba(255, 250, 240, 0.3);
 }
 
 .opening-arrows {
