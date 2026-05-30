@@ -1,10 +1,10 @@
-# Chess Coordinates Trainer
+# Chess Path
 
-An interactive chess learning website for practicing board coordinates. The trainer shows a target square, lets users click the matching square on the board, and gives instant visual and sound feedback.
+A chess learning website with a profile dashboard, feature links, and an interactive coordinate trainer. The first full lesson helps users practice board coordinates with instant visual and sound feedback.
 
 ## Live Site
 
-[Open the Chess Coordinates Trainer](https://jackshi812.github.io/chess/)
+[Open Chess Path](https://jackshi812.github.io/chess/)
 
 If the link does not work yet, enable GitHub Pages for this repository:
 
@@ -30,3 +30,6 @@ No install step is required. The site is built with plain HTML, CSS, and JavaScr
 - Optional board labels
 - White and black board orientation
 - Toggleable sound effects
+- Profile dashboard with links to learning features
+- Opening lesson roadmap page
+- Brainstormed ideas for tactics, endgames, game review, and daily challenges

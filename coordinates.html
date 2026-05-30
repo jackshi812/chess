@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Learn Chess Coordinates</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="has-nav">
+    <header class="top-nav" aria-label="Main navigation">
+      <a class="brand" href="index.html" aria-label="Chess Path home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Chess Path</span>
+      </a>
+      <nav class="nav-links" aria-label="Lessons">
+        <a href="coordinates.html">Coordinates</a>
+        <a href="openings.html">Openings</a>
+      </nav>
+    </header>
+
+    <main class="app-shell">
+      <section class="trainer" aria-labelledby="app-title">
+        <div class="lesson-panel">
+          <p class="eyebrow">Chessboard Coordinates</p>
+          <h1 id="app-title">Find the square</h1>
+          <p class="prompt-copy">
+            Click the shown target coordinate as quickly and accurately as you can.
+          </p>
+
+          <div class="target-card" aria-live="polite">
+            <span class="target-label">Target</span>
+            <strong id="target-square">e4</strong>
+            <span id="feedback" class="feedback">Ready when you are.</span>
+          </div>
+
+          <div class="stats-grid" aria-label="Training progress">
+            <div>
+              <span>Score</span>
+              <strong id="score">0</strong>
+            </div>
+            <div>
+              <span>Streak</span>
+              <strong id="streak">0</strong>
+            </div>
+            <div>
+              <span>Accuracy</span>
+              <strong id="accuracy">100%</strong>
+            </div>
+          </div>
+
+          <div class="controls" aria-label="Trainer settings">
+            <button id="new-target" type="button">New target</button>
+            <button id="reset" class="secondary" type="button">Reset</button>
+            <label class="toggle">
+              <input id="show-labels" type="checkbox" checked>
+              <span>Show labels</span>
+            </label>
+            <label class="toggle">
+              <input id="flip-board" type="checkbox">
+              <span>Black view</span>
+            </label>
+            <label class="toggle">
+              <input id="sound-enabled" type="checkbox" checked>
+              <span>Sound</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="board-wrap" aria-label="Interactive chessboard coordinate trainer">
+          <div id="board" class="board" role="grid" aria-label="Chessboard"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

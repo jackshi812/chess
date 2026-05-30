@@ -3,64 +3,126 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chess Coordinates Trainer</title>
+    <title>Chess Learning Profile</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main class="app-shell">
-      <section class="trainer" aria-labelledby="app-title">
-        <div class="lesson-panel">
-          <p class="eyebrow">Chessboard Coordinates</p>
-          <h1 id="app-title">Find the square</h1>
+    <header class="top-nav" aria-label="Main navigation">
+      <a class="brand" href="index.html" aria-label="Chess Path home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Chess Path</span>
+      </a>
+      <nav class="nav-links" aria-label="Lessons">
+        <a href="coordinates.html">Coordinates</a>
+        <a href="openings.html">Openings</a>
+      </nav>
+    </header>
+
+    <main class="profile-shell">
+      <section class="profile-layout" aria-labelledby="profile-title">
+        <aside class="profile-panel">
+          <div class="avatar-board" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <p class="eyebrow">Player Profile</p>
+          <h1 id="profile-title">Chess training profile</h1>
           <p class="prompt-copy">
-            Click the shown target coordinate as quickly and accurately as you can.
+            Pick a skill, practice in short rounds, and keep building from board vision to opening plans.
           </p>
 
-          <div class="target-card" aria-live="polite">
-            <span class="target-label">Target</span>
-            <strong id="target-square">e4</strong>
-            <span id="feedback" class="feedback">Ready when you are.</span>
-          </div>
-
-          <div class="stats-grid" aria-label="Training progress">
+          <dl class="profile-stats" aria-label="Profile overview">
             <div>
-              <span>Score</span>
-              <strong id="score">0</strong>
+              <dt>Active lessons</dt>
+              <dd>2</dd>
             </div>
             <div>
-              <span>Streak</span>
-              <strong id="streak">0</strong>
+              <dt>Next focus</dt>
+              <dd>Coordinates</dd>
             </div>
             <div>
-              <span>Accuracy</span>
-              <strong id="accuracy">100%</strong>
+              <dt>Roadmap ideas</dt>
+              <dd>4</dd>
             </div>
+          </dl>
+        </aside>
+
+        <section class="feature-area" aria-labelledby="feature-title">
+          <div class="section-heading">
+            <p class="eyebrow">Learning Hub</p>
+            <h2 id="feature-title">Choose a feature</h2>
           </div>
 
-          <div class="controls" aria-label="Trainer settings">
-            <button id="new-target" type="button">New target</button>
-            <button id="reset" class="secondary" type="button">Reset</button>
-            <label class="toggle">
-              <input id="show-labels" type="checkbox" checked>
-              <span>Show labels</span>
-            </label>
-            <label class="toggle">
-              <input id="flip-board" type="checkbox">
-              <span>Black view</span>
-            </label>
-            <label class="toggle">
-              <input id="sound-enabled" type="checkbox" checked>
-              <span>Sound</span>
-            </label>
-          </div>
-        </div>
+          <div class="feature-grid">
+            <a class="feature-card ready" href="coordinates.html">
+              <span class="feature-icon grid-icon" aria-hidden="true"></span>
+              <span class="feature-copy">
+                <strong>Learn chess coordinates</strong>
+                <span>Practice files, ranks, orientation, speed, and accuracy.</span>
+              </span>
+              <span class="feature-status">Ready</span>
+            </a>
 
-        <div class="board-wrap" aria-label="Interactive chessboard coordinate trainer">
-          <div id="board" class="board" role="grid" aria-label="Chessboard"></div>
-        </div>
+            <a class="feature-card next" href="openings.html">
+              <span class="feature-icon opening-icon" aria-hidden="true"></span>
+              <span class="feature-copy">
+                <strong>Learn openings</strong>
+                <span>Build a small repertoire and understand the first plans.</span>
+              </span>
+              <span class="feature-status">Next</span>
+            </a>
+
+            <a class="feature-card idea" href="#future-features">
+              <span class="feature-icon tactics-icon" aria-hidden="true"></span>
+              <span class="feature-copy">
+                <strong>Tactics puzzles</strong>
+                <span>Spot forks, pins, skewers, discovered attacks, and mates.</span>
+              </span>
+              <span class="feature-status">Idea</span>
+            </a>
+
+            <a class="feature-card idea" href="#future-features">
+              <span class="feature-icon endgame-icon" aria-hidden="true"></span>
+              <span class="feature-copy">
+                <strong>Endgame basics</strong>
+                <span>Practice king activity, opposition, promotion, and mates.</span>
+              </span>
+              <span class="feature-status">Idea</span>
+            </a>
+
+            <a class="feature-card idea" href="#future-features">
+              <span class="feature-icon review-icon" aria-hidden="true"></span>
+              <span class="feature-copy">
+                <strong>Game review</strong>
+                <span>Replay mistakes, tag patterns, and turn games into lessons.</span>
+              </span>
+              <span class="feature-status">Idea</span>
+            </a>
+
+            <a class="feature-card idea" href="#future-features">
+              <span class="feature-icon challenge-icon" aria-hidden="true"></span>
+              <span class="feature-copy">
+                <strong>Daily challenge</strong>
+                <span>One quick training task each day to build a steady habit.</span>
+              </span>
+              <span class="feature-status">Idea</span>
+            </a>
+          </div>
+
+          <section id="future-features" class="future-panel" aria-labelledby="future-title">
+            <p class="eyebrow">Brainstorm</p>
+            <h2 id="future-title">Feature ideas to build next</h2>
+            <ul class="idea-list">
+              <li>Opening flashcards with the reason behind each move.</li>
+              <li>Tactical pattern drills grouped by theme and difficulty.</li>
+              <li>Endgame mini-games for king and pawn positions.</li>
+              <li>A progress journal that saves streaks, accuracy, and favorite lessons.</li>
+            </ul>
+          </section>
+        </section>
       </section>
     </main>
-
-    <script src="app.js"></script>
   </body>
 </html>
