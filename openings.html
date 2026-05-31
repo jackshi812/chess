@@ -45,9 +45,6 @@
           <div class="opening-explainer" aria-live="polite">
             <span class="target-label" id="opening-move-counter">Move 1 of 1</span>
             <strong id="opening-move">1. e4</strong>
-            <h2 id="opening-step-title">Control the center</h2>
-            <p id="opening-step-text"></p>
-            <p id="opening-motivation" class="motivation"></p>
             <p id="practice-status" class="practice-status" hidden></p>
           </div>
 
@@ -68,8 +65,15 @@
           </div>
 
           <div class="opening-board-wrap">
-            <div id="opening-board" class="opening-board" role="grid" aria-label="Opening demonstration board"></div>
-            <svg id="opening-arrows" class="opening-arrows" viewBox="0 0 100 100" aria-hidden="true"></svg>
+            <div id="opening-board" class="opening-board" role="grid" aria-label="Opening demonstration board">
+              <svg id="opening-arrows" class="opening-arrows" viewBox="0 0 100 100" aria-hidden="true"></svg>
+            </div>
+            <aside id="board-message" class="board-message" aria-live="polite">
+              <span class="target-label" id="board-message-move">1. e4</span>
+              <h2 id="opening-step-title">Control the center</h2>
+              <p id="opening-step-text"></p>
+              <p id="opening-motivation" class="motivation"></p>
+            </aside>
           </div>
 
           <div id="move-list" class="move-list" aria-label="Opening moves"></div>
