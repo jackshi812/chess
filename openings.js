@@ -297,6 +297,7 @@ const openingSideElement = document.querySelector("#opening-side");
 const openingSummaryElement = document.querySelector("#opening-summary");
 const moveCounterElement = document.querySelector("#opening-move-counter");
 const moveElement = document.querySelector("#opening-move");
+const boardMessageMoveElement = document.querySelector("#board-message-move");
 const titleElement = document.querySelector("#opening-step-title");
 const textElement = document.querySelector("#opening-step-text");
 const motivationElement = document.querySelector("#opening-motivation");
@@ -307,6 +308,8 @@ const restartPracticeButton = document.querySelector("#restart-practice");
 const studyModeButton = document.querySelector("#study-mode");
 const practiceModeButton = document.querySelector("#practice-mode");
 
+const botReplyDelay = 360;
+
 let mode = "study";
 let currentOpeningIndex = 0;
 let currentStepIndex = 0;
@@ -315,6 +318,9 @@ let practiceStepIndex = 0;
 let selectedSquare = "";
 let lastPracticeMove = null;
 let practiceFeedback = "";
+let botReplyTimer = null;
+let isBotThinking = false;
+let openingAudioContext;
 
 function startingPosition() {
   const board = {};
@@ -371,6 +377,91 @@ function squareCenter(square) {
     x: (fileIndex + 0.5) * 12.5,
     y: (rankIndex + 0.5) * 12.5
   };
+}
+
+function moveAnimationOffset(move) {
+  const pieceSizeScale = 119;
+  const fromFile = openingFiles.indexOf(move.from[0]);
+  const toFile = openingFiles.indexOf(move.to[0]);
+  const fromRank = openingRanks.indexOf(move.from[1]);
+  const toRank = openingRanks.indexOf(move.to[1]);
+
+  return {
+    x: `${(fromFile - toFile) * pieceSizeScale}%`,
+    y: `${(fromRank - toRank) * pieceSizeScale}%`
+  };
+}
+
+function arrowLinePoints(arrow) {
+  const start = squareCenter(arrow.from);
+  const end = squareCenter(arrow.to);
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const trim = arrow.type === "idea" ? 4.1 : 4.8;
+  const trimX = (dx / length) * trim;
+  const trimY = (dy / length) * trim;
+
+  return {
+    x1: start.x + trimX,
+    y1: start.y + trimY,
+    x2: end.x - trimX,
+    y2: end.y - trimY
+  };
+}
+
+function getOpeningAudioContext() {
+  const browserWindow = globalThis.window || {};
+  const AudioContextClass = browserWindow.AudioContext || browserWindow.webkitAudioContext;
+
+  if (!AudioContextClass) {
+    return null;
+  }
+
+  if (!openingAudioContext) {
+    openingAudioContext = new AudioContextClass();
+  }
+
+  if (openingAudioContext.state === "suspended") {
+    openingAudioContext.resume();
+  }
+
+  return openingAudioContext;
+}
+
+function playMoveSound() {
+  const context = getOpeningAudioContext();
+
+  if (!context) {
+    return;
+  }
+
+  const now = context.currentTime;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+
+  oscillator.type = "triangle";
+  oscillator.frequency.setValueAtTime(210, now);
+  oscillator.frequency.exponentialRampToValueAtTime(145, now + 0.1);
+
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.exponentialRampToValueAtTime(0.07, now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.15);
+}
+
+function clearBotReplyTimer() {
+  if (botReplyTimer) {
+    const clearTimer = globalThis.window?.clearTimeout || globalThis.clearTimeout;
+    clearTimer(botReplyTimer);
+    botReplyTimer = null;
+  }
+
+  isBotThinking = false;
 }
 
 function drawTabs() {
@@ -464,6 +555,14 @@ function drawBoard() {
         const pieceElement = document.createElement("span");
         pieceElement.className = `opening-piece ${piece.color}`;
         pieceElement.textContent = pieceLabels[piece.color][piece.type];
+
+        if (mode === "practice" && lastPracticeMove?.animate && coordinate === lastPracticeMove.to) {
+          const offset = moveAnimationOffset(lastPracticeMove);
+          pieceElement.classList.add("is-moving");
+          pieceElement.style.setProperty("--move-x", offset.x);
+          pieceElement.style.setProperty("--move-y", offset.y);
+        }
+
         square.append(pieceElement);
       }
 
@@ -471,36 +570,40 @@ function drawBoard() {
     });
   });
 
+  boardElement.append(arrowsElement);
   drawArrows(step ? step.arrows : []);
+
+  if (lastPracticeMove?.animate) {
+    lastPracticeMove.animate = false;
+  }
 }
 
 function drawArrows(arrows) {
   arrowsElement.innerHTML = `
     <defs>
-      <marker id="arrow-move" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+      <marker id="arrow-move" viewBox="0 0 10 10" refX="7.4" refY="5" markerWidth="2.8" markerHeight="2.8" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z"></path>
       </marker>
-      <marker id="arrow-idea" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+      <marker id="arrow-idea" viewBox="0 0 10 10" refX="7.4" refY="5" markerWidth="2.8" markerHeight="2.8" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z"></path>
       </marker>
-      <marker id="arrow-pressure" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+      <marker id="arrow-pressure" viewBox="0 0 10 10" refX="7.4" refY="5" markerWidth="2.8" markerHeight="2.8" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z"></path>
       </marker>
-      <marker id="arrow-defense" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+      <marker id="arrow-defense" viewBox="0 0 10 10" refX="7.4" refY="5" markerWidth="2.8" markerHeight="2.8" orient="auto-start-reverse">
         <path d="M 0 0 L 10 5 L 0 10 z"></path>
       </marker>
     </defs>
   `;
 
   arrows.forEach((arrow) => {
-    const start = squareCenter(arrow.from);
-    const end = squareCenter(arrow.to);
+    const points = arrowLinePoints(arrow);
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("class", `opening-arrow ${arrow.type}`);
-    line.setAttribute("x1", String(start.x));
-    line.setAttribute("y1", String(start.y));
-    line.setAttribute("x2", String(end.x));
-    line.setAttribute("y2", String(end.y));
+    line.setAttribute("x1", String(points.x1));
+    line.setAttribute("y1", String(points.y1));
+    line.setAttribute("x2", String(points.x2));
+    line.setAttribute("y2", String(points.y2));
     line.setAttribute("marker-end", `url(#arrow-${arrow.type})`);
     arrowsElement.append(line);
   });
@@ -529,6 +632,7 @@ function drawMoveList() {
       }
 
       currentStepIndex = index;
+      playMoveSound();
       renderOpening();
     });
     moveListElement.append(button);
@@ -543,6 +647,7 @@ function updateLessonText() {
   openingSummaryElement.textContent = opening.summary;
   moveCounterElement.textContent = `${mode === "practice" ? "Practice" : "Move"} ${visibleStepIndex(opening) + 1} of ${opening.steps.length}`;
   moveElement.textContent = step.move;
+  boardMessageMoveElement.textContent = step.move;
   titleElement.textContent = step.title;
   textElement.textContent = step.explanation;
   motivationElement.textContent = step.motivation;
@@ -593,38 +698,55 @@ function practicePrompt(prefix = "") {
   practiceFeedback = `${prefix}${colorName} to move: ${step.move}.`;
 }
 
-function applyPracticeMove(step) {
+function applyPracticeMove(step, options = {}) {
+  const shouldAnimate = options.animate ?? true;
+  const shouldPlaySound = options.sound ?? false;
+
   applyMove(practiceBoard, step);
-  lastPracticeMove = { from: step.from, to: step.to };
+  lastPracticeMove = { from: step.from, to: step.to, animate: shouldAnimate };
+
+  if (shouldPlaySound) {
+    playMoveSound();
+  }
 }
 
-function playBotReplies(prefix = "") {
+function playBotReplies(prefix = "", options = {}) {
   const opening = activeOpening();
   const botMoves = [];
+  const shouldAnimate = options.animate ?? mode === "practice";
+  const shouldPlaySound = options.sound ?? mode === "practice";
 
   while (practiceStepIndex < opening.steps.length && moveColor(practiceStepIndex) !== opening.practiceColor) {
     const botStep = opening.steps[practiceStepIndex];
-    applyPracticeMove(botStep);
+    applyPracticeMove(botStep, { animate: shouldAnimate, sound: shouldPlaySound });
     practiceStepIndex += 1;
     botMoves.push(botStep.move);
   }
 
   const botPrefix = botMoves.length ? `${prefix}Bot played ${botMoves.join(", ")}. ` : prefix;
   practicePrompt(botPrefix);
+  return botMoves;
 }
 
 function resetPractice() {
+  clearBotReplyTimer();
   practiceBoard = startingPosition();
   practiceStepIndex = 0;
   selectedSquare = "";
   lastPracticeMove = null;
   practiceFeedback = "";
-  playBotReplies();
+  playBotReplies("", { animate: mode === "practice", sound: mode === "practice" });
 }
 
 function handlePracticeSquare(coordinate) {
   const opening = activeOpening();
   const expected = expectedPracticeStep();
+
+  if (isBotThinking) {
+    practiceFeedback = "Bot is making its reply.";
+    renderOpening();
+    return;
+  }
 
   if (!expected) {
     practiceFeedback = "Line complete. Restart practice to run it again.";
@@ -662,10 +784,26 @@ function handlePracticeSquare(coordinate) {
   }
 
   if (selectedSquare === expected.from && coordinate === expected.to) {
-    applyPracticeMove(expected);
+    applyPracticeMove(expected, { animate: true, sound: true });
     practiceStepIndex += 1;
     selectedSquare = "";
-    playBotReplies(`Correct: ${expected.move}. `);
+    const botReplyIsNext = practiceStepIndex < opening.steps.length && moveColor(practiceStepIndex) !== opening.practiceColor;
+
+    if (botReplyIsNext) {
+      isBotThinking = true;
+      practiceFeedback = `Correct: ${expected.move}. Bot is thinking...`;
+      renderOpening();
+      const setTimer = globalThis.window?.setTimeout || globalThis.setTimeout;
+      botReplyTimer = setTimer(() => {
+        isBotThinking = false;
+        botReplyTimer = null;
+        playBotReplies(`Correct: ${expected.move}. `, { animate: true, sound: true });
+        renderOpening();
+      }, botReplyDelay);
+      return;
+    }
+
+    playBotReplies(`Correct: ${expected.move}. `, { animate: true, sound: true });
     renderOpening();
     return;
   }
@@ -684,12 +822,14 @@ function renderOpening() {
 
 previousButton.addEventListener("click", () => {
   currentStepIndex = Math.max(0, currentStepIndex - 1);
+  playMoveSound();
   renderOpening();
 });
 
 nextButton.addEventListener("click", () => {
   const opening = activeOpening();
   currentStepIndex = Math.min(opening.steps.length - 1, currentStepIndex + 1);
+  playMoveSound();
   renderOpening();
 });
 
@@ -700,6 +840,7 @@ restartPracticeButton.addEventListener("click", () => {
 
 studyModeButton.addEventListener("click", () => {
   mode = "study";
+  clearBotReplyTimer();
   renderOpening();
 });
 
