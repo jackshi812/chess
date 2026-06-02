@@ -317,7 +317,9 @@ let practiceBoard = startingPosition();
 let practiceStepIndex = 0;
 let selectedSquare = "";
 let lastPracticeMove = null;
+let wrongAttempt = null;
 let practiceFeedback = "";
+let practiceFeedbackType = "info";
 let botReplyTimer = null;
 let isBotThinking = false;
 let openingAudioContext;
@@ -490,6 +492,7 @@ function drawBoard() {
   const board = mode === "practice" ? practiceBoard : positionAfter(opening, currentStepIndex);
   const highlights = new Set();
   const lastMoveSquares = new Set();
+  const wrongSquares = new Set();
 
   if (mode === "study" && step) {
     highlights.add(step.from);
@@ -503,6 +506,11 @@ function drawBoard() {
   if (mode === "practice" && lastPracticeMove) {
     lastMoveSquares.add(lastPracticeMove.from);
     lastMoveSquares.add(lastPracticeMove.to);
+  }
+
+  if (mode === "practice" && wrongAttempt) {
+    wrongSquares.add(wrongAttempt.from);
+    wrongSquares.add(wrongAttempt.to);
   }
 
   boardElement.innerHTML = "";
@@ -535,6 +543,10 @@ function drawBoard() {
 
       if (lastMoveSquares.has(coordinate)) {
         square.classList.add("is-highlighted");
+      }
+
+      if (wrongSquares.has(coordinate)) {
+        square.classList.add("is-wrong-attempt");
       }
 
       if (file === "a") {
@@ -653,6 +665,7 @@ function updateLessonText() {
   motivationElement.textContent = step.motivation;
   practiceStatusElement.hidden = mode !== "practice";
   practiceStatusElement.textContent = practiceFeedback;
+  practiceStatusElement.className = `practice-status ${practiceFeedbackType}`;
   previousButton.hidden = mode === "practice";
   nextButton.hidden = mode === "practice";
   restartPracticeButton.hidden = mode !== "practice";
@@ -691,11 +704,13 @@ function practicePrompt(prefix = "") {
 
   if (!step) {
     practiceFeedback = `${prefix}Line complete. Restart practice to run it again.`;
+    practiceFeedbackType = "success";
     return;
   }
 
   const colorName = opening.practiceColor === "white" ? "White" : "Black";
   practiceFeedback = `${prefix}${colorName} to move: ${step.move}.`;
+  practiceFeedbackType = prefix.startsWith("Correct") ? "success" : "info";
 }
 
 function applyPracticeMove(step, options = {}) {
@@ -734,7 +749,9 @@ function resetPractice() {
   practiceStepIndex = 0;
   selectedSquare = "";
   lastPracticeMove = null;
+  wrongAttempt = null;
   practiceFeedback = "";
+  practiceFeedbackType = "info";
   playBotReplies("", { animate: mode === "practice", sound: mode === "practice" });
 }
 
@@ -744,12 +761,14 @@ function handlePracticeSquare(coordinate) {
 
   if (isBotThinking) {
     practiceFeedback = "Bot is making its reply.";
+    practiceFeedbackType = "info";
     renderOpening();
     return;
   }
 
   if (!expected) {
     practiceFeedback = "Line complete. Restart practice to run it again.";
+    practiceFeedbackType = "success";
     renderOpening();
     return;
   }
@@ -757,28 +776,24 @@ function handlePracticeSquare(coordinate) {
   const piece = practiceBoard[coordinate];
 
   if (!selectedSquare) {
-    if (!piece || piece.color !== opening.practiceColor) {
-      practicePrompt("Choose one of your pieces. ");
+    if (!piece) {
+      practicePrompt("Choose any piece, then choose a destination. ");
       renderOpening();
       return;
     }
 
     selectedSquare = coordinate;
+    wrongAttempt = null;
     practiceFeedback = `Selected ${coordinate}. Choose the destination square.`;
+    practiceFeedbackType = "info";
     renderOpening();
     return;
   }
 
   if (selectedSquare === coordinate) {
     selectedSquare = "";
+    wrongAttempt = null;
     practicePrompt();
-    renderOpening();
-    return;
-  }
-
-  if (piece && piece.color === opening.practiceColor) {
-    selectedSquare = coordinate;
-    practiceFeedback = `Selected ${coordinate}. Choose the destination square.`;
     renderOpening();
     return;
   }
@@ -787,11 +802,13 @@ function handlePracticeSquare(coordinate) {
     applyPracticeMove(expected, { animate: true, sound: true });
     practiceStepIndex += 1;
     selectedSquare = "";
+    wrongAttempt = null;
     const botReplyIsNext = practiceStepIndex < opening.steps.length && moveColor(practiceStepIndex) !== opening.practiceColor;
 
     if (botReplyIsNext) {
       isBotThinking = true;
       practiceFeedback = `Correct: ${expected.move}. Bot is thinking...`;
+      practiceFeedbackType = "success";
       renderOpening();
       const setTimer = globalThis.window?.setTimeout || globalThis.setTimeout;
       botReplyTimer = setTimer(() => {
@@ -808,8 +825,11 @@ function handlePracticeSquare(coordinate) {
     return;
   }
 
+  const attemptedFrom = selectedSquare;
   selectedSquare = "";
-  practiceFeedback = `Not this line. Try ${expected.move}: ${expected.title}.`;
+  wrongAttempt = { from: attemptedFrom, to: coordinate };
+  practiceFeedback = `Wrong move. The opening move is ${expected.move}: ${expected.title}.`;
+  practiceFeedbackType = "wrong";
   renderOpening();
 }
 

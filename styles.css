@@ -533,10 +533,20 @@ input {
 
 .practice-status {
   padding: 12px;
-  border: 1px solid rgba(34, 118, 83, 0.26);
+  border: 1px solid rgba(54, 105, 167, 0.24);
   border-radius: 8px;
   color: var(--ink) !important;
+  background: rgba(54, 105, 167, 0.08);
+}
+
+.practice-status.success {
+  border-color: rgba(34, 118, 83, 0.28);
   background: rgba(34, 118, 83, 0.08);
+}
+
+.practice-status.wrong {
+  border-color: rgba(157, 48, 48, 0.32);
+  background: rgba(157, 48, 48, 0.08);
 }
 
 .opening-controls {
@@ -583,14 +593,15 @@ button:disabled {
 .opening-board-wrap {
   position: relative;
   width: min(82vh, 100%, 780px);
-  aspect-ratio: 1;
+  display: grid;
+  gap: 12px;
   justify-self: center;
 }
 
 .opening-board {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
@@ -640,6 +651,16 @@ button:disabled {
   border: 4px solid #3669a7;
   border-radius: 8px;
   pointer-events: none;
+}
+
+.opening-square.is-wrong-attempt::before {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border: 4px solid #9d3030;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .opening-piece {
@@ -744,11 +765,7 @@ button:disabled {
 }
 
 .board-message {
-  position: absolute;
-  right: clamp(10px, 2vw, 18px);
-  top: clamp(10px, 2vw, 18px);
-  z-index: 8;
-  width: min(330px, calc(100% - 20px));
+  width: 100%;
   display: grid;
   gap: 8px;
   padding: 14px;
@@ -756,7 +773,6 @@ button:disabled {
   border-radius: 8px;
   background: rgba(255, 253, 247, 0.9);
   box-shadow: 0 14px 34px rgba(23, 33, 26, 0.16);
-  pointer-events: none;
 }
 
 .board-message h2,
